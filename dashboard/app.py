@@ -20,6 +20,9 @@ def render():
     status = report["status"]
 
     subgroup_rows = []
+    subgroup_bars = []
+    threshold = report["thresholds"]["cohort_min_sensitivity"]
+
     for name, metrics in report["cohorts"].items():
         criterion = next(
             (
@@ -28,23 +31,53 @@ def render():
             ),
             None,
         )
+
         outcome = criterion["status"] if criterion else "NOT TESTED"
+        sensitivity = metrics["sensitivity"]
+
         subgroup_rows.append(
             "<tr>"
             f"<td>{escape(str(name))}</td>"
             f"<td>{metrics['n']}</td>"
-            f"<td>{percent(metrics['sensitivity'])}</td>"
+            f"<td>{percent(sensitivity)}</td>"
             f"<td>{escape(outcome)}</td>"
             "</tr>"
         )
 
+        if sensitivity is None:
+            width = 0
+            color = "#8b9bad"
+        else:
+            width = max(0, min(sensitivity * 100, 100))
+            color = "#37d4b5" if outcome == "PASS" else "#ff9878"
+
+        subgroup_bars.append(
+            '<div class="bar-row">'
+            f'<div class="bar-label">Group {escape(str(name))}</div>'
+            '<div class="bar-track">'
+            f'<div class="bar-fill" style="width:{width:.1f}%;'
+            f'background:{color}"></div>'
+            '</div>'
+            f'<div class="bar-value">{percent(sensitivity)}'
+            f' — {escape(outcome)}</div>'
+            '</div>'
+        )
+
     check_rows = []
     for check in report["checks"]:
+        name = str(check["criterion"])
+        observed = check["observed"]
+
+        if "sensitivity" in name or "specificity" in name:
+            observed_text = percent(observed)
+        else:
+            observed_text = escape(str(observed))
+
         check_rows.append(
             "<tr>"
-            f"<td>{escape(check['criterion'])}</td>"
-            f"<td>{percent(check['observed']) if 'sensitivity' in check['criterion'] or 'specificity' in check['criterion'] else escape(str(check['observed']))}</td>"
-            f"<td>{escape(check['status'])}</td>"
+            f"<td>{escape(name)}</td>"
+            f"<td>{observed_text}</td>"
+            f"<td>{escape(str(check['status']))}</td>"
             "</tr>"
         )
 
@@ -56,25 +89,79 @@ def render():
 <title>MedAI Validation Lab</title>
 <style>
 body {{
-  background:#081626; color:#e9f3f8;
-  font:16px Arial,sans-serif; margin:0; padding:35px;
+  background:#081626;
+  color:#e9f3f8;
+  font:16px Arial,sans-serif;
+  margin:0;
+  padding:35px;
 }}
 main {{max-width:1100px; margin:auto}}
 h1 {{color:#53ded7}}
 p {{color:#afc4d1}}
 .cards {{display:flex; flex-wrap:wrap; gap:16px}}
 .card {{
-  background:#14283b; border:1px solid #355367;
-  border-radius:12px; padding:22px; flex:1; min-width:210px;
+  background:#14283b;
+  border:1px solid #355367;
+  border-radius:12px;
+  padding:22px;
+  flex:1;
+  min-width:210px;
 }}
-.number {{font-size:28px; font-weight:bold; margin-top:12px}}
+.number {{
+  font-size:28px;
+  font-weight:bold;
+  margin-top:12px;
+}}
 .warning {{color:#ffad81}}
-table {{width:100%; border-collapse:collapse; margin:20px 0 36px}}
-th,td {{padding:13px; border-bottom:1px solid #355367;
-        text-align:left}}
+table {{
+  width:100%;
+  border-collapse:collapse;
+  margin:20px 0 36px;
+}}
+th,td {{
+  padding:13px;
+  border-bottom:1px solid #355367;
+  text-align:left;
+}}
 th {{color:#53ded7}}
-.notice {{border-left:4px solid #53ded7; padding:12px;
-         background:#14283b; margin:24px 0}}
+.notice {{
+  border-left:4px solid #53ded7;
+  padding:12px;
+  background:#14283b;
+  margin:24px 0;
+}}
+.bar-row {{
+  display:grid;
+  grid-template-columns:90px 1fr 150px;
+  gap:16px;
+  align-items:center;
+  margin:18px 0;
+}}
+.bar-label {{font-weight:bold}}
+.bar-track {{
+  height:26px;
+  background:#24384b;
+  border-radius:6px;
+  overflow:hidden;
+}}
+.bar-fill {{
+  height:100%;
+  border-radius:6px;
+}}
+.bar-value {{
+  font-weight:bold;
+  font-size:14px;
+}}
+.threshold-note {{
+  color:#afc4d1;
+  font-size:14px;
+}}
+@media(max-width:650px) {{
+  .bar-row {{
+    grid-template-columns:1fr;
+    gap:6px;
+  }}
+}}
 </style>
 </head>
 <body>
@@ -88,27 +175,54 @@ Not clinical validation, regulatory conformity or deployment approval.
 </div>
 
 <div class="cards">
-<div class="card">Overall Sensitivity
-<div class="number">{percent(overall['sensitivity'])}</div></div>
-<div class="card">Overall Specificity
-<div class="number">{percent(overall['specificity'])}</div></div>
-<div class="card">Cases Evaluated
-<div class="number">{overall['n']}</div></div>
-<div class="card">Evidence Review Status
-<div class="number warning">{escape(status)}</div></div>
+<div class="card">
+Overall Sensitivity
+<div class="number">{percent(overall['sensitivity'])}</div>
 </div>
+<div class="card">
+Overall Specificity
+<div class="number">{percent(overall['specificity'])}</div>
+</div>
+<div class="card">
+Cases Evaluated
+<div class="number">{overall['n']}</div>
+</div>
+<div class="card">
+Evidence Review Status
+<div class="number warning">{escape(str(status))}</div>
+</div>
+</div>
+
+<h2>Subgroup Sensitivity Comparison</h2>
+<p class="threshold-note">
+Illustrative minimum sensitivity:
+{percent(threshold)} — not a clinical acceptance threshold.
+</p>
+
+{''.join(subgroup_bars)}
 
 <h2>Subgroup Performance</h2>
 <table>
-<thead><tr><th>Group</th><th>Cases</th>
-<th>Sensitivity</th><th>Criterion</th></tr></thead>
+<thead>
+<tr>
+<th>Group</th>
+<th>Cases</th>
+<th>Sensitivity</th>
+<th>Criterion</th>
+</tr>
+</thead>
 <tbody>{''.join(subgroup_rows)}</tbody>
 </table>
 
 <h2>Illustrative Acceptance Checks</h2>
 <table>
-<thead><tr><th>Criterion</th><th>Observed</th>
-<th>Status</th></tr></thead>
+<thead>
+<tr>
+<th>Criterion</th>
+<th>Observed</th>
+<th>Status</th>
+</tr>
+</thead>
 <tbody>{''.join(check_rows)}</tbody>
 </table>
 
@@ -123,6 +237,7 @@ class Handler(BaseHTTPRequestHandler):
         if self.path != "/":
             self.send_error(404)
             return
+
         try:
             content = render().encode("utf-8")
         except (OSError, ValueError, KeyError, TypeError) as error:
