@@ -1,0 +1,7 @@
+{
+  "overall_min_sensitivity": 0.85,
+  "overall_min_specificity": 0.80,
+  "cohort_min_sensitivity": 0.80,
+  "cohort_min_positives": 15,
+  "maximum_sensitivity_drop": 0.08
+}

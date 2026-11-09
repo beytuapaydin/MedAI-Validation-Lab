@@ -1,0 +1,163 @@
+{
+  "disclaimer": "Synthetic portfolio demonstration; not clinical validation or regulatory conformity.",
+  "decision": "Illustrative evidence review only; never a deployment authorization.",
+  "status": "REVIEW_REQUIRED",
+  "thresholds": {
+    "overall_min_sensitivity": 0.85,
+    "overall_min_specificity": 0.8,
+    "cohort_min_sensitivity": 0.8,
+    "cohort_min_positives": 15,
+    "maximum_sensitivity_drop": 0.08
+  },
+  "overall": {
+    "n": 320,
+    "tp": 137,
+    "fn": 23,
+    "tn": 148,
+    "fp": 12,
+    "sensitivity": 0.8562,
+    "specificity": 0.925,
+    "false_negative_rate": 0.1437,
+    "positive_predictive_value": 0.9195,
+    "sensitivity_ci_95_wilson": [
+      0.7935,
+      0.9023
+    ],
+    "specificity_ci_95_wilson": [
+      0.8735,
+      0.9566
+    ]
+  },
+  "cohorts": {
+    "A": {
+      "n": 160,
+      "tp": 74,
+      "fn": 6,
+      "tn": 74,
+      "fp": 6,
+      "sensitivity": 0.925,
+      "specificity": 0.925,
+      "false_negative_rate": 0.075,
+      "positive_predictive_value": 0.925,
+      "sensitivity_ci_95_wilson": [
+        0.8459,
+        0.9652
+      ],
+      "specificity_ci_95_wilson": [
+        0.8459,
+        0.9652
+      ]
+    },
+    "B": {
+      "n": 160,
+      "tp": 63,
+      "fn": 17,
+      "tn": 74,
+      "fp": 6,
+      "sensitivity": 0.7875,
+      "specificity": 0.925,
+      "false_negative_rate": 0.2125,
+      "positive_predictive_value": 0.913,
+      "sensitivity_ci_95_wilson": [
+        0.6858,
+        0.8629
+      ],
+      "specificity_ci_95_wilson": [
+        0.8459,
+        0.9652
+      ]
+    }
+  },
+  "periods": {
+    "baseline": {
+      "n": 160,
+      "tp": 74,
+      "fn": 6,
+      "tn": 74,
+      "fp": 6,
+      "sensitivity": 0.925,
+      "specificity": 0.925,
+      "false_negative_rate": 0.075,
+      "positive_predictive_value": 0.925,
+      "sensitivity_ci_95_wilson": [
+        0.8459,
+        0.9652
+      ],
+      "specificity_ci_95_wilson": [
+        0.8459,
+        0.9652
+      ]
+    },
+    "current": {
+      "n": 160,
+      "tp": 63,
+      "fn": 17,
+      "tn": 74,
+      "fp": 6,
+      "sensitivity": 0.7875,
+      "specificity": 0.925,
+      "false_negative_rate": 0.2125,
+      "positive_predictive_value": 0.913,
+      "sensitivity_ci_95_wilson": [
+        0.6858,
+        0.8629
+      ],
+      "specificity_ci_95_wilson": [
+        0.8459,
+        0.9652
+      ]
+    }
+  },
+  "period_sensitivity_change": -0.1375,
+  "checks": [
+    {
+      "criterion": "overall_sensitivity",
+      "observed": 0.8562,
+      "operator": ">=",
+      "threshold": 0.85,
+      "status": "PASS"
+    },
+    {
+      "criterion": "overall_specificity",
+      "observed": 0.925,
+      "operator": ">=",
+      "threshold": 0.8,
+      "status": "PASS"
+    },
+    {
+      "criterion": "cohort_A_sensitivity",
+      "observed": 0.925,
+      "operator": ">=",
+      "threshold": 0.8,
+      "status": "PASS"
+    },
+    {
+      "criterion": "cohort_A_minimum_positives",
+      "observed": 80,
+      "operator": ">=",
+      "threshold": 15,
+      "status": "PASS"
+    },
+    {
+      "criterion": "cohort_B_sensitivity",
+      "observed": 0.7875,
+      "operator": ">=",
+      "threshold": 0.8,
+      "status": "FAIL"
+    },
+    {
+      "criterion": "cohort_B_minimum_positives",
+      "observed": 80,
+      "operator": ">=",
+      "threshold": 15,
+      "status": "PASS"
+    },
+    {
+      "criterion": "period_sensitivity_drop",
+      "observed": 0.1375,
+      "operator": "<=",
+      "threshold": 0.08,
+      "status": "FAIL"
+    }
+  ]
+}
