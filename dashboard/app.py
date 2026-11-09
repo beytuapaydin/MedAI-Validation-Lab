@@ -14,24 +14,48 @@ def percent(value):
     return "N/A" if value is None else f"{value * 100:.1f}%"
 
 
+def make_bar(label, sensitivity, outcome):
+    """Render an accessible horizontal sensitivity bar."""
+    if sensitivity is None:
+        width = 0
+        color = "#8b9bad"
+    else:
+        width = max(0, min(sensitivity * 100, 100))
+        color = "#37d4b5" if outcome == "PASS" else "#ff9878"
+
+    return (
+        '<div class="bar-row">'
+        f'<div class="bar-label">{escape(str(label))}</div>'
+        '<div class="bar-track">'
+        f'<div class="bar-fill" style="width:{width:.1f}%;'
+        f'background:{color}"></div>'
+        '</div>'
+        f'<div class="bar-value">{percent(sensitivity)}'
+        f' — {escape(str(outcome))}</div>'
+        '</div>'
+    )
+
+
 def render():
     report = json.loads(REPORT.read_text(encoding="utf-8"))
     overall = report["overall"]
     status = report["status"]
 
+    checks_by_name = {
+        check["criterion"]: check
+        for check in report["checks"]
+    }
+
+    threshold = report["thresholds"]["cohort_min_sensitivity"]
+    maximum_drop = report["thresholds"]["maximum_sensitivity_drop"]
+
     subgroup_rows = []
     subgroup_bars = []
-    threshold = report["thresholds"]["cohort_min_sensitivity"]
 
     for name, metrics in report["cohorts"].items():
-        criterion = next(
-            (
-                c for c in report["checks"]
-                if c["criterion"] == f"cohort_{name}_sensitivity"
-            ),
-            None,
+        criterion = checks_by_name.get(
+            f"cohort_{name}_sensitivity"
         )
-
         outcome = criterion["status"] if criterion else "NOT TESTED"
         sensitivity = metrics["sensitivity"]
 
@@ -44,31 +68,61 @@ def render():
             "</tr>"
         )
 
-        if sensitivity is None:
-            width = 0
-            color = "#8b9bad"
-        else:
-            width = max(0, min(sensitivity * 100, 100))
-            color = "#37d4b5" if outcome == "PASS" else "#ff9878"
-
         subgroup_bars.append(
-            '<div class="bar-row">'
-            f'<div class="bar-label">Group {escape(str(name))}</div>'
-            '<div class="bar-track">'
-            f'<div class="bar-fill" style="width:{width:.1f}%;'
-            f'background:{color}"></div>'
-            '</div>'
-            f'<div class="bar-value">{percent(sensitivity)}'
-            f' — {escape(outcome)}</div>'
-            '</div>'
+            make_bar(f"Group {name}", sensitivity, outcome)
         )
 
+    period_rows = []
+    period_bars = []
+
+    for name, metrics in report["periods"].items():
+        sensitivity = metrics["sensitivity"]
+        outcome = (
+            "INSUFFICIENT DATA"
+            if sensitivity is None
+            else "OBSERVED"
+        )
+
+        period_bars.append(
+            make_bar(name, sensitivity, outcome)
+        )
+
+        period_rows.append(
+            "<tr>"
+            f"<td>{escape(str(name))}</td>"
+            f"<td>{metrics['n']}</td>"
+            f"<td>{metrics['tp']}</td>"
+            f"<td>{metrics['fn']}</td>"
+            f"<td>{percent(sensitivity)}</td>"
+            "</tr>"
+        )
+
+    drop_check = checks_by_name.get(
+        "period_sensitivity_drop"
+    )
+
+    drop_status = (
+        drop_check["status"]
+        if drop_check else "NOT TESTED"
+    )
+
+    period_change = report.get("period_sensitivity_change")
+
+    if period_change is None:
+        change_text = "N/A"
+    else:
+        change_text = f"{period_change * 100:+.1f} percentage points"
+
     check_rows = []
+
     for check in report["checks"]:
         name = str(check["criterion"])
         observed = check["observed"]
 
-        if "sensitivity" in name or "specificity" in name:
+        if (
+            "sensitivity" in name
+            or "specificity" in name
+        ):
             observed_text = percent(observed)
         else:
             observed_text = escape(str(observed))
@@ -97,6 +151,7 @@ body {{
 }}
 main {{max-width:1100px; margin:auto}}
 h1 {{color:#53ded7}}
+h2 {{margin-top:34px}}
 p {{color:#afc4d1}}
 .cards {{display:flex; flex-wrap:wrap; gap:16px}}
 .card {{
@@ -132,7 +187,7 @@ th {{color:#53ded7}}
 }}
 .bar-row {{
   display:grid;
-  grid-template-columns:90px 1fr 150px;
+  grid-template-columns:100px 1fr 155px;
   gap:16px;
   align-items:center;
   margin:18px 0;
@@ -156,6 +211,14 @@ th {{color:#53ded7}}
   color:#afc4d1;
   font-size:14px;
 }}
+.finding {{
+  background:#292a37;
+  border-left:4px solid #ff9878;
+  border-radius:5px;
+  padding:18px;
+  margin:20px 0;
+}}
+.finding strong {{color:#ffad81}}
 @media(max-width:650px) {{
   .bar-row {{
     grid-template-columns:1fr;
@@ -204,24 +267,42 @@ Illustrative minimum sensitivity:
 <h2>Subgroup Performance</h2>
 <table>
 <thead>
-<tr>
-<th>Group</th>
-<th>Cases</th>
-<th>Sensitivity</th>
-<th>Criterion</th>
-</tr>
+<tr><th>Group</th><th>Cases</th>
+<th>Sensitivity</th><th>Criterion</th></tr>
 </thead>
 <tbody>{''.join(subgroup_rows)}</tbody>
+</table>
+
+<h2>Performance Monitoring Across Periods</h2>
+<p class="threshold-note">
+Period-specific sensitivity comparison.
+A performance change is not proof of data drift.
+</p>
+
+{''.join(period_bars)}
+
+<div class="finding">
+<strong>Performance Change Assessment</strong>
+<p>Observed sensitivity change: {change_text}</p>
+<p>Maximum illustrative allowed drop:
+{percent(maximum_drop)}</p>
+<p>Criterion status: <strong>{escape(str(drop_status))}</strong></p>
+</div>
+
+<h2>Period Evidence</h2>
+<table>
+<thead>
+<tr><th>Period</th><th>Cases</th>
+<th>TP</th><th>FN</th><th>Sensitivity</th></tr>
+</thead>
+<tbody>{''.join(period_rows)}</tbody>
 </table>
 
 <h2>Illustrative Acceptance Checks</h2>
 <table>
 <thead>
-<tr>
-<th>Criterion</th>
-<th>Observed</th>
-<th>Status</th>
-</tr>
+<tr><th>Criterion</th><th>Observed</th>
+<th>Status</th></tr>
 </thead>
 <tbody>{''.join(check_rows)}</tbody>
 </table>
