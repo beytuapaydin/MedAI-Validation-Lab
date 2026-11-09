@@ -10,11 +10,25 @@
 
 ## Risk-to-Verification Traceability
 
-| Risk ID | Requirement ID | Test ID | Expected evidence | Verification status |
+| Risk ID | Requirement ID | Test ID | Executable evidence | Verification status |
 |---|---|---|---|---|
-| RISK-001 | REQ-001 | TEST-001 | Subgroup sensitivity calculation and threshold flag | Mapping pending |
-| RISK-002 | REQ-002 | TEST-002 | Period sensitivity comparison and degradation flag | Test mapping pending |
+| RISK-001 | REQ-001 | TEST-001 | `tests/test_traceability.py::TraceabilityTests::test_TEST_001_subgroup_sensitivity` | PARTIALLY VERIFIED |
+| RISK-002 | REQ-002 | TEST-002 | `tests/test_traceability.py::TraceabilityTests::test_TEST_002_performance_degradation` | PARTIALLY VERIFIED |
+## Automated Verification Evidence
 
+- CI workflow: `.github/workflows/tests.yml`
+- Verified commit: `bbd6e02`
+- Tests executed: 9
+- Result: PASS
+- Environments: Python 3.10 and Python 3.12
+- Evidence: GitHub Actions - Python Validation Tests #5
+
+## Remaining Verification Gaps
+
+- TEST-001 needs explicit coverage for every defined subgroup.
+- TEST-002 needs additional threshold boundary tests.
+- Report-level acceptance criteria require direct assertions.
+- Test success does not establish clinical model acceptability.
 ## Evidence Sources
 
 - Source code: `medai/validation.py`
