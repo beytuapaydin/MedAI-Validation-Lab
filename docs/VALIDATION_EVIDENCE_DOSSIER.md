@@ -2,270 +2,296 @@
 # Medical AI Validation Evidence Dossier
 
 **Project:** MedAI Validation Lab  
-**Version:** v0.4 — Portfolio Evidence Preparation  
+**Version:** 0.4  
 **Date:** November 2026  
-**Development approach:** AI-assisted engineering prototype  
-**Data:** Fully synthetic binary classification records  
-**Regulatory status:** Research and educational demonstration only
+**Development:** AI-assisted engineering portfolio  
+**Scope:** Synthetic binary classification validation  
+**Status:** Educational prototype — not for clinical use
 
 ---
 
 ## 1. Executive Summary
 
-MedAI Validation Lab demonstrates a reproducible
-approach to evaluating medical AI classification
-performance, subgroup disparities, and performance
-changes across evaluation periods.
+MedAI Validation Lab demonstrates a reproducible,
+risk-based approach to medical AI performance evaluation.
 
-The prototype processes 320 synthetic records and
-generates structured validation evidence, including
-automated acceptance checks, JSON/Markdown reports,
-and a read-only local dashboard.
+The prototype examines aggregate performance, subgroup
+sensitivity, period-specific sensitivity, and
+cohort-by-period stratification.
 
-The demonstration illustrates a critical principle:
+It generates reviewable evidence through:
 
-**Acceptable aggregate performance does not guarantee
-acceptable performance across individual subgroups.**
+- Python validation logic
+- Two synthetic evaluation datasets
+- Automated acceptance checks
+- JSON and Markdown reports
+- A local read-only dashboard
+- Risk and requirement traceability
+- Automated verification using GitHub Actions
 
-The system identifies two failed illustrative criteria
-and returns REVIEW_REQUIRED.
+The central finding is that acceptable aggregate
+sensitivity can coexist with failed subgroup and
+performance-change criteria.
 
-No clinical safety, regulatory conformity, or
-deployment authorization is claimed.
+**Both synthetic scenarios return REVIEW_REQUIRED.**
 
-## 2. Intended Purpose and Scope
+This is an evidence-review result, not a clinical
+release, regulatory, or deployment decision.
 
-The validation software is designed to:
+## 2. Intended Purpose
 
-- Calculate binary classification performance metrics.
-- Examine performance for defined subgroups.
-- Compare sensitivity across evaluation periods.
-- Evaluate configurable illustrative acceptance criteria.
-- Generate reproducible machine-readable reports.
-- Present results in a read-only dashboard.
+The prototype is intended to demonstrate engineering
+methods for assessing fictional binary AI predictions.
 
-The prototype does not provide a clinical diagnosis,
-make patient-specific decisions, or authorize deployment.
+It calculates classification metrics, evaluates
+illustrative acceptance thresholds, and identifies
+results requiring human investigation.
 
-## 3. Evaluation Dataset
+It does not diagnose patients, assess real clinical
+performance, or authorize medical use.
 
-| Attribute | Value |
-|---|---|
-| Total synthetic cases | 320 |
-| Subgroup A | 160 |
-| Subgroup B | 160 |
-| Baseline period | 160 |
-| Current period | 160 |
-| Positive reference cases | 160 |
-| Negative reference cases | 160 |
+## 3. Evaluation Scenarios
 
-Source:
-`data/synthetic_predictions.csv`
+Two independent synthetic examples are provided.
 
-All records are fictional.
+### Scenario A — Original Dataset
 
-### Important Dataset Limitation
+Source: `data/synthetic_predictions.csv`
 
-In the supplied example, subgroup A corresponds to
-the baseline period and subgroup B corresponds to the
-current period.
-
-Therefore, subgroup effects and temporal effects
-are confounded.
-
-The demonstration can detect observed differences
-but cannot establish whether they result from subgroup
-membership, temporal degradation, or another cause.
-
-A future validation dataset must separate these
-dimensions to support independent conclusions.
-
-## 4. Overall Performance Results
+320 fictional records.
 
 | Metric | Result |
 |---|---:|
-| True positives | 137 |
-| False negatives | 23 |
-| True negatives | 148 |
-| False positives | 12 |
-| Sensitivity | 85.62% |
-| Specificity | 92.50% |
-| False-negative rate | 14.37% |
-| Positive predictive value | 91.95% |
+| Overall sensitivity | 85.62% |
+| Overall specificity | 92.50% |
+| Group A sensitivity | 92.50% |
+| Group B sensitivity | 78.75% |
+| Period sensitivity change | -13.75 percentage points |
 
-Illustrative minimum overall sensitivity: 85%.
+**Finding A-001:** Group B fails the illustrative
+80% minimum sensitivity criterion.
 
-**Result: PASS**
+**Finding A-002:** The period sensitivity difference
+exceeds the illustrative 8-percentage-point limit.
 
-This result alone is insufficient to establish
-the acceptability of subgroup performance.
+**Methodological limitation:** Group A corresponds
+to the baseline period, and Group B corresponds
+to the current period. These factors are completely
+confounded.
 
-## 5. Subgroup Performance Assessment
+Consequently, the observed period difference cannot
+be independently attributed to time.
 
-| Metric | Subgroup A | Subgroup B |
-|---|---:|---:|
-| Cases | 160 | 160 |
-| True positives | 74 | 63 |
-| False negatives | 6 | 17 |
-| Sensitivity | 92.50% | 78.75% |
-| False-negative rate | 7.50% | 21.25% |
-| Illustrative criterion | PASS | FAIL |
+### Scenario B — Balanced Dataset
 
-Illustrative minimum subgroup sensitivity: 80%.
+Source: `data/synthetic_predictions_balanced.csv`
 
-### Finding F-001
+320 fictional records.
 
-Subgroup B sensitivity is below the predefined
-illustrative criterion.
+Each subgroup is represented in both evaluation
+periods, with 80 records in each combination.
 
-The validation system correctly records the failed
-criterion and requires further investigation.
+| Cohort | Baseline | Current | Change |
+|---|---:|---:|---:|
+| A | 95.0% | 90.0% | -5.0 percentage points |
+| B | 85.0% | 70.0% | -15.0 percentage points |
 
-The observed difference does not independently
-establish clinical harm or model bias.
+Aggregated results:
 
-## 6. Performance Change Assessment
-
-| Evaluation period | Sensitivity |
+| Metric | Result |
 |---|---:|
-| Baseline | 92.50% |
-| Current | 78.75% |
+| Overall sensitivity | 85.0% |
+| Overall specificity | 92.5% |
+| Group A sensitivity | 92.5% |
+| Group B sensitivity | 77.5% |
+| Baseline sensitivity | 90.0% |
+| Current sensitivity | 80.0% |
+| Period sensitivity change | -10.0 percentage points |
 
-Observed sensitivity change: -13.75 percentage points.
+**Finding B-001:** Group B fails the illustrative
+80% sensitivity criterion.
 
-Illustrative maximum allowed decrease:
-8 percentage points.
+**Finding B-002:** The overall period sensitivity
+decrease exceeds the illustrative 8-percentage-point
+limit.
 
-**Result: FAIL**
+**Finding B-003:** Within-cohort sensitivity changes
+differ between groups: -5 points for A and -15
+points for B.
 
-### Finding F-002
+The balanced dataset permits descriptive comparisons
+within each subgroup.
 
-The evaluation system detects a sensitivity difference
-exceeding the configured illustrative limit.
+These results do not establish the cause of the
+observed differences or prove statistical significance,
+algorithmic bias, clinical harm, or data drift.
 
-Because subgroup and period are confounded in this
-dataset, the observed change must not be presented as
-independent proof of temporal model degradation.
+## 4. Illustrative Acceptance Criteria
 
-It is also not proof of covariate drift or data drift.
+| Criterion | Threshold |
+|---|---|
+| Minimum overall sensitivity | 85% |
+| Minimum overall specificity | 80% |
+| Minimum subgroup sensitivity | 80% |
+| Minimum reference-positive cases per subgroup | 15 |
+| Maximum overall period sensitivity drop | 8 percentage points |
 
-## 7. Risk Analysis and Traceability
+All thresholds are illustrative engineering inputs.
 
-| Risk | Requirement | Test reference | Current position |
-|---|---|---|---|
-| RISK-001 | REQ-001 | TEST-001 | Failed subgroup criterion detected |
-| RISK-002 | REQ-002 | TEST-002 | Performance difference detected |
+They have not been clinically justified or validated.
+
+## 5. Risk-Based Traceability
+
+| Risk | Requirement | Verification |
+|---|---|---|
+| RISK-001: Missed subgroup detection | REQ-001 | TEST-001 |
+| RISK-002: Performance degradation | REQ-002 | TEST-002 |
 
 Supporting documents:
 
-- `docs/risk_register.md`
-- `docs/validation_requirements.md`
-- `docs/traceability_matrix.md`
+- [Risk Register](risk_register.md)
+- [Validation Requirements](validation_requirements.md)
+- [Traceability Matrix](traceability_matrix.md)
 
-The risk analysis is preliminary and inspired by
-ISO 14971 principles.
+The project illustrates traceability concepts
+associated with risk-based medical software engineering.
 
-Formal severity, probability, benefit-risk, and
-residual-risk assessments have not been performed.
+It is not a complete ISO 14971 risk management file.
 
-## 8. Automated Verification Evidence
+## 6. Automated Verification
 
-The repository includes 15 automated Python tests.
+The repository includes **19 automated Python tests**.
 
-The tests address:
+Verification coverage includes:
 
-- Confusion-matrix calculations
-- Sensitivity and specificity
-- Undefined metrics and insufficient data
-- Synthetic input integrity
-- Subgroup sensitivity checks
+- Confusion-matrix metrics
+- Sensitivity and specificity calculations
+- Confidence intervals
+- Invalid and duplicate inputs
+- Insufficient-data handling
+- Subgroup-specific evaluations
 - Illustrative threshold boundaries
-- Performance change detection
-- JSON and Markdown report generation
-- Dashboard evidence and disclaimers
+- Period performance comparisons
+- JSON and Markdown report evidence
+- Dashboard content and safety disclaimers
+- Cohort-by-period combination coverage
+- Expected stratified sensitivity values
+- Within-cohort sensitivity changes
 
-Automated CI runs on:
+GitHub Actions runs the test suite on Python 3.10
+and Python 3.12.
 
-- Python 3.10
-- Python 3.12
+**Evidence:** GitHub Actions workflow #16 verified
+19 passing tests following the cohort-period
+verification update.
 
-Evidence:
-`.github/workflows/tests.yml`
+Subsequent workflow executions also completed
+successfully after the balanced dataset and
+dashboard changes.
 
-GitHub Actions run #12 completed successfully
-on both configured Python environments.
+[GitHub Actions](../../actions)
 
-Passing tests demonstrate expected software behavior
-for covered inputs. They do not establish clinical
-model validity.
+A successful software test demonstrates expected
+behavior for the tested inputs. It does not establish
+the clinical performance or safety of a medical AI
+model.
 
-## 9. Dashboard Evidence
+## 7. Dashboard Evidence
 
-The local dashboard presents:
+The application provides:
 
-1. Overall classification performance
-2. Subgroup sensitivity comparison
-3. Period-specific performance monitoring
-4. Illustrative acceptance-criterion results
-5. REVIEW_REQUIRED evidence status
+- Selection between the original and balanced datasets
+- Aggregate sensitivity and specificity
+- Subgroup sensitivity visualization
+- Performance comparison across periods
+- Acceptance-check results
+- Cohort-by-period stratified metrics
+- Within-cohort sensitivity changes
+- Data coverage information
+- Evidence-review status
 
-Source:
-`dashboard/app.py`
+Implementation: `dashboard/app.py`
 
-Input:
-`output/demo/validation_report.json`
+Report inputs:
 
-The dashboard is read-only and runs locally.
+- `output/demo/validation_report.json`
+- `output/balanced/validation_report.json`
 
-## 10. Evidence Review Decision
+The dashboard operates locally at:
 
-**Prototype evaluation status: REVIEW_REQUIRED**
+`http://127.0.0.1:8766`
+
+It reads saved evaluation reports and does not
+perform clinical actions.
+
+## 8. Evidence Review Decision
+
+**Scenario A: REVIEW_REQUIRED**
 
 Reasons:
+- Failed subgroup sensitivity criterion
+- Failed period-change criterion
+- Completely confounded subgroup and period factors
 
-- Subgroup B sensitivity fails its illustrative
-  minimum criterion.
-- The observed period difference exceeds its
-  illustrative maximum.
-- The synthetic dataset confounds subgroup and period.
-- Clinical risk acceptability has not been assessed.
+**Scenario B: REVIEW_REQUIRED**
 
-This status is an evidence review outcome, not a
-clinical release or deployment decision.
+Reasons:
+- Failed subgroup sensitivity criterion
+- Failed period-change criterion
+- Unequal within-cohort sensitivity changes
 
-## 11. Remaining Validation Gaps
+The results are illustrative evidence-review flags,
+not legally or clinically meaningful release decisions.
 
-The following work is necessary before making
-stronger engineering or clinical claims:
+## 9. Remaining Engineering Gaps
 
-- Separate subgroup and period effects using an
-  appropriately structured evaluation dataset.
-- Define the actual clinical intended purpose.
-- Establish clinically justified acceptance criteria.
-- Validate ground-truth labeling and data provenance.
-- Evaluate representative clinical populations.
-- Assess sample-size and confidence-interval adequacy.
-- Perform formal hazard and residual-risk assessment.
-- Evaluate model calibration and additional relevant
-  performance metrics.
-- Investigate observed subgroup differences.
-- Establish monitoring and change-control procedures.
-- Complete independent technical review.
+The following gaps remain unresolved:
 
-## 12. Engineering Conclusion
+1. Define a hypothetical clinical intended purpose
+   and use environment.
+2. Establish clinically justified acceptance criteria.
+3. Validate ground-truth labeling and data provenance.
+4. Evaluate representative real-world populations
+   using appropriately authorized data.
+5. Assess uncertainty, sample-size adequacy, and
+   clinically meaningful subgroup differences.
+6. Establish independent verification and review.
+7. Investigate potential sources of performance change.
+8. Evaluate calibration and other relevant metrics.
+9. Complete formal severity, probability, risk-control,
+   and residual-risk assessments where applicable.
+10. Establish change management, monitoring, and
+    documented investigation procedures.
 
-The prototype demonstrates how aggregate medical AI
-performance may conceal important evaluation failures.
+The available tests provide partial verification
+evidence for selected requirements. They do not
+justify a blanket claim of full validation.
 
-The central engineering lesson is:
+## 10. Engineering Conclusion
 
-**A validation framework must make limitations,
-subgroup failures, and unresolved risks visible
-rather than reduce model safety to one headline metric.**
+This prototype demonstrates an evidence-oriented
+approach to AI performance evaluation.
 
-This project is an AI-assisted, synthetic engineering
-portfolio demonstration.
+The main lessons are:
 
-It is not evidence of clinical validation,
-ISO 14971 conformity, MDR compliance,
-or authorization for medical use.
+- Aggregate metrics alone are insufficient.
+- Subgroup performance deserves separate evaluation.
+- Period comparisons need careful interpretation.
+- Dataset structure can introduce confounding.
+- Risk, requirements, tests, and evidence should be
+  traceable.
+- Unresolved failures must remain visible.
+
+**Engineering principle:**
+
+A credible validation process should expose
+uncertainty and unresolved risks rather than hide
+them behind a successful aggregate metric.
+
+---
+
+**AI-assisted educational portfolio prototype.**
+
+**No real clinical data. No clinical validation.
+No ISO 14971, IEC 62304, or MDR conformity claim.
+Not authorized for medical use.**
